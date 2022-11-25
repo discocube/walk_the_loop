@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Walk_The_Loop"
+version = "0.0.1"
+authors = [
+  { name="Rommelo Yu", email="rommelo@rommelo.com" },
+]
+description = "A simple game to learn about hamiltonian cycles, by doing"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU AFFERO GENERAL PUBLIC LICENSE",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/sampleproject"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
