@@ -5,7 +5,7 @@ A simple 'learning by doing' game illustrating the concept of hamiltonian cycles
 ## Description
 
 6 puzzles, each having more edges and nodes (game pieces) in its graph (gameboard) than the previous (from 4 nodes to 32 nodes) results in each proceeding graph being slightly more difficult than the last, demonstrating the idea of complexity, of the growth in complexity in solving a puzzle with let's say a thousand more nodes.
-Once a puzzle is solved, the game will proceeds to the next puzzle. Clicking on the 6 icons below the gameboard will allow you to skip to that particular puzzle.
+Once a puzzle is solved, the game will proceeds to the next puzzle. Clicking on one of the 6 icons below the gameboard will set that graph as the current game.
 The gameboard consists of a visual representation of a graph, which is a collection of nodes and edges, where node represent objects and edges the connection / relationship between them. In this game the nodes are the steps and the edges are the lines connecting these steps.
 The goal is to step (click) from node to node (if they are connected by an edge) until all nodes have been clicked and the last node is next to the start.
 
@@ -15,10 +15,10 @@ Click on any node to begin. This is the origin. You will have to end up here to 
 
 Stepping Forward:
 Click on any node adjacent to the current step to take a step.
-You can run by clicking on an unvisited node not adjacent to the current step.
+You can run by clicking on an unvisited node (grayed circle) not adjacent to the current step.
 
 Stepping Backward:
-Clicking on any visited node will cause that to be the current step, thereby erasing the previous moves.
+Clicking on any visited node (colored node) will cause that to be the current step (purple circle with a ring), thereby erasing the previous moves.
 
 Switching heads:
 Clicking on the other end (the origin), will switch the origin to be the head (current step) and the head as the origin.
