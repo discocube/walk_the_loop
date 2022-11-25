@@ -1,12 +1,12 @@
 # WALK THE LOOP
 
-A simple 'learning by doing' game illustrating the concept of hamiltonian cycles by having the player find a hamiltonian cycle (a cycle that visits each node exactly once) in 6 graphs (gameboards), each consecutively more difficult than the last, derived from the skeleton of the 5 platonic solids with the sixth discocube graph derived from skeleton of a polycube of an octahedron (like using sugarcubes to create a diamond).
+A simple 'learning by doing' game illustrating the concept of hamiltonian cycles by having the player find a hamiltonian cycle (a cycle that visits each node exactly once) in 6 graphs (gameboards), each consecutively more difficult than the last, with 5 derived from the skeleton of the 5 platonic solids and a sixth discocube graph derived from skeleton of a polycube of an octahedron (like using sugarcubes to form a diamond).
 
 ## Description
 
-6 puzzles, each having more edges and nodes (game pieces) in its graph (gameboard) than the previous (from 4 nodes to 32 nodes) results in the proceeding graph being slightly for difficult than the last, which demonstrates the complexity of solving a puzzle with let's say a thousand more nodes.
-Once a puzzle is solved, the game will move onto the next puzzle. Clicking on the 6 icons below the gameboard will allow you to skip to that particular puzzle.
-The gameboard consists of a graph, which is a collection of nodes and edges. Nodes are the steps and the edges connect those steps.
+6 puzzles, each having more edges and nodes (game pieces) in its graph (gameboard) than the previous (from 4 nodes to 32 nodes) results in each proceeding graph being slightly more difficult than the last, demonstrating the idea of complexity, of the growth in complexity in solving a puzzle with let's say a thousand more nodes.
+Once a puzzle is solved, the game will proceeds to the next puzzle. Clicking on the 6 icons below the gameboard will allow you to skip to that particular puzzle.
+The gameboard consists of a visual representation of a graph, which is a collection of nodes and edges, where node represent objects and edges the connection / relationship between them. In this game the nodes are the steps and the edges are the lines connecting these steps.
 The goal is to step (click) from node to node (if they are connected by an edge) until all nodes have been clicked and the last node is next to the start.
 
 ## GAMEPLAY
