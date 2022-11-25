@@ -5,12 +5,12 @@ from itertools import cycle
 import pygame.transform
 from pygame.locals import MOUSEBUTTONDOWN, KEYDOWN, K_ESCAPE, QUIT, K_r
 
-from game.pieces.edge import Edge
-from game.pieces.icons import GraphIcon, Icon
-from game.pieces.node import Node
-from game.pieces.players import Players
-from game.settings import colors, G_TYPES, G_POLYHEDRA
-from game.utils import time, walk
+from src.game.pieces.edge import Edge
+from src.game.pieces.icons import GraphIcon, Icon
+from src.game.pieces.node import Node
+from src.game.pieces.players import Players
+from src.game.settings import colors, G_TYPES, G_POLYHEDRA
+from src.game.utils import time, walk
 
 
 class WalkTheLoop:
@@ -91,12 +91,6 @@ class WalkTheLoop:
         self.draw_sprites()
         self.players.add_player()
 
-    def reset_flags(self):
-        """
-        Reset flags to default values.
-        """
-        self.update, self.running = False, True
-
     def place_nodes_edges(self):
         """
         Add edges & nodes.
@@ -125,6 +119,21 @@ class WalkTheLoop:
         self.buttons = {G_TYPES[i]: self.add_sprite_to_grps(GraphIcon(center=(250 + i * 100, 900), name=G_TYPES[i], group=self.buttons_grp), button_name=G_TYPES[i]) for i in range(6)}
         self.buttons['s_icon'] = self.add_sprite_to_grps(Icon(name=self.graph_type, group=self.buttons_grp))
 
+    def draw_sprites(self):
+        """
+        Draw sprites in all sprites.
+        """
+        self.screen.fill(colors['BLACK'])
+        for entity in self.all_sprites_grp:
+            self.screen.blit(entity.surface, entity.rect)
+        pygame.display.flip()
+
+    def reset_flags(self):
+        """
+        Reset flags to default values.
+        """
+        self.update, self.running = False, True
+
     def add_sprite_to_grps(self, sprite, node=None, edge=None, button_name=None):
         """
         Add given sprite, node or edge to all sprites and respective group.
@@ -141,9 +150,9 @@ class WalkTheLoop:
         self.all_sprites_grp.add(sprite)
         return sprite
 
-    def walk(self):
+    def play(self):
         """
-        Player walk.
+        Player play.
         """
         new = False
         while self.running:
@@ -171,7 +180,7 @@ class WalkTheLoop:
         if new:
             time.sleep(.5)
             self.reset_game()
-            return self.walk()
+            return self.play()
         pygame.quit()
 
     def parse_click(self):
@@ -196,6 +205,19 @@ class WalkTheLoop:
                         return self.player.step(n)
                     return self.run(n)
 
+    def set_node_edge(self, node=None, edge=None, style='active'):
+        """
+        Set edge style.
+        """
+        if node is not None:
+            (node_obj := self.nodes[node]).set_color(style)
+            if style == 'active':
+                node_obj.player_id = self.player.id
+        if edge:
+            (edge_obj := self.edges[frozenset(edge)]).set_color(style)
+            if style == 'active':
+                edge_obj.player_id = self.player.id
+
     def show_winning(self):
         """
         Set flags for winning, resulting in winning colors (GREEN).
@@ -215,19 +237,6 @@ class WalkTheLoop:
             self.set_node_edge(node=n, style='losing')
         for e in self.path.edges:
             self.set_node_edge(edge=e, style='losing')
-
-    def set_node_edge(self, node=None, edge=None, style='active'):
-        """
-        Set edge style.
-        """
-        if node is not None:
-            (node_obj := self.nodes[node]).set_color(style)
-            if style == 'active':
-                node_obj.player_id = self.player.id
-        if edge:
-            (edge_obj := self.edges[frozenset(edge)]).set_color(style)
-            if style == 'active':
-                edge_obj.player_id = self.player.id
 
     def run(self, n):
         """
@@ -276,12 +285,3 @@ class WalkTheLoop:
         """
         for idx, style in enumerate(('head', 'origin')):
             self.set_node_edge(node=player.ends[0], style=style)
-
-    def draw_sprites(self):
-        """
-        Draw sprites in all sprites.
-        """
-        self.screen.fill(colors['BLACK'])
-        for entity in self.all_sprites_grp:
-            self.screen.blit(entity.surface, entity.rect)
-        pygame.display.flip()

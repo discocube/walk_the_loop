@@ -2,8 +2,8 @@
 Path class for player. Container class for placing steps when walking.
 """
 
-from game.utils import *
 from more_itertools import windowed
+from src.game.utils import id_seq
 
 
 class Path:

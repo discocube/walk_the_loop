@@ -2,16 +2,16 @@
 Main for playing platonic ham.
 """
 
-from game.walk_the_loop import WalkTheLoop
+from walk_the_loop import WalkTheLoop
 
 
-def main(numbered=None):
+def main(numbered=True):
     """
     Run Icosian Game.
     """
     game = WalkTheLoop(numbered=numbered)
-    game.walk()
+    game.play()
 
 
 if __name__ == '__main__':
-    main(numbered=True)
+    main(numbered=False)

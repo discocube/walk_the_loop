@@ -3,8 +3,8 @@ Players class.
 """
 from typing import Optional
 
-from game.pieces.player import Player
-from game.utils import unpack
+from src.game.pieces.player import Player
+from src.game.utils import unpack
 
 
 class Players:

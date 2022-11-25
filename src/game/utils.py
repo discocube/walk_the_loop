@@ -196,7 +196,7 @@ def unpack(nested_list) -> Iterator[int]:
 @timed
 def walk(A, start=0, walked=None, goal=None, shuffle=True, prune=False) -> list[int]:
     """
-    General brute-force walk algorithm.
+    General brute-force play algorithm.
     """
     if prune:
         A = prune_graph(A, walked)

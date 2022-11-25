@@ -1,7 +1,7 @@
 """
 Player class.
 """
-from game.pieces.path import Path
+from src.game.pieces.path import Path
 
 
 class Player:

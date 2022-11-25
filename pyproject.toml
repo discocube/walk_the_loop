@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Walk_The_Loop"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Rommelo Yu", email="rommelo@rommelo.com" },
 ]
@@ -13,10 +13,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU AFFERO GENERAL PUBLIC LICENSE",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Operating System :: OS Independent",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://github.com/discocube/walk_the_loop"
+"Bug Tracker" = "https://github.com/discocube/walk_the_loop/issues"

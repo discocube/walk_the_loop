@@ -1,10 +1,12 @@
 """
 Nodes and Edges classes
 """
+import os
 import pygame.sprite
 from random import randint
 
-from game.settings import colors
+from src.game.settings import colors
+from src.game.definitions import ICONS_DIR
 
 
 class NodeSprite(pygame.sprite.Sprite):
@@ -22,7 +24,7 @@ class NodeSprite(pygame.sprite.Sprite):
         self.radius = radius
         self.numbered = numbered
         self.screen = screen
-        self.fp_inactive = f'/home/rommelo/Repos/walk_the_loop/game/icons/node_inactive.png'
+        self.fp_inactive = os.path.join(ICONS_DIR, 'node_inactive.png')
         self.surface = pygame.image.load(self.fp_inactive).convert_alpha()
         self.rect = self.surface.get_rect(center=self.center)
         self.set_color()
