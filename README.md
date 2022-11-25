@@ -43,16 +43,18 @@ Just click. To pick a starting point.
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+Install dependencies through the command line:
+
+```
+pip install -r requirements.txt
+```
+
 
 ### Executing program
 
 * How to run the program
 * Step-by-step bullets
-```
-code blocks for commands
-```
+
 
 ## Help
 
