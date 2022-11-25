@@ -27,11 +27,14 @@ Choose another graph (non-sequential):
   The 6 puzzle icons below can be used to pick a particular graph.
 
 Reset game: 
-  The key (r) will reset the game
+  The (r) key will reset the game
+
+Quit:
+  The (esc) key will quit the game.
 
 ## Getting Started
 
-Just click.
+Just click. To pick a starting point. 
 
 ### Dependencies
 
