@@ -26,7 +26,8 @@ class Players:
         """
         Nodes which have been stepped.
         """
-        return {*unpack([player.path.data for player in self.data.values()])}
+        return {*unpack(self.current.path.data)}
+        # return {*unpack([player.path.data for player in self.data.values()])}
 
     @property
     def unstepped(self):
@@ -47,7 +48,10 @@ class Players:
         """
         Current path.
         """
-        return self.data[self.current_idx]
+        try:
+            return self.data[self.current_idx]
+        except KeyError:
+            return []
 
     @property
     def new_key(self):

@@ -1,16 +1,17 @@
 """
 Platonian Game.
 """
+import random
 from itertools import cycle
 import pygame.transform
-from pygame.locals import MOUSEBUTTONDOWN, KEYDOWN, K_ESCAPE, QUIT, K_r
+from pygame.locals import MOUSEBUTTONDOWN, KEYDOWN, K_ESCAPE, QUIT, K_r, K_RIGHT, K_SPACE
 
 from src.game.pieces.edge import Edge
-from src.game.pieces.icons import GraphIcon, Icon
+from src.game.pieces.icons import ActionIcon, DrawnIcon, ToggleIcon
 from src.game.pieces.node import Node
 from src.game.pieces.players import Players
-from src.game.settings import colors, G_TYPES, G_POLYHEDRA
-from src.game.utils import time, walk
+from src.game.settings import COLORS, G_TYPES, G_POLYHEDRA
+from src.game.utils import time, walk, walker
 
 
 class WalkTheLoop:
@@ -21,9 +22,14 @@ class WalkTheLoop:
     edges, nodes, players, clock = [None] * 4
     update, running = [None] * 2
     G, V, E, A, ORD = [None] * 5
+    walker = None
 
-    def __init__(self, screen_rect=(1000, 1000), numbered=True, graph_type=None):
-        self.screen_rect = screen_rect
+    def __init__(self, screen_size=(800, 800), numbered=True, graph_type=None, animate=False):
+        self.new = False
+        self.winning, self.losing = False, False
+        self.animate = animate
+        self.screen_rect = screen_size
+        self.screen_scale = self.screen_rect[0] / 1000
         self.numbered = numbered
         self.graph_type = graph_type
 
@@ -54,12 +60,14 @@ class WalkTheLoop:
         pygame.init()
         self.screen = pygame.display.set_mode(self.screen_rect)
         self.clock = pygame.time.Clock()
+        self.clock.tick(30)
 
     def reset_game(self, graph_type=None):
         """
         Create new containers.
         """
         self.set_graph(graph_type=graph_type)
+        self.walker = walker(self.A)
         self.edges = {frozenset(edge): None for edge in self.E}
         self.nodes = {node: None for node in self.A.keys()}
         self.players = Players(self.G, nodes=self.nodes)
@@ -71,7 +79,12 @@ class WalkTheLoop:
         """
         Initialize game with new graph.
         """
-        self.graph_type = graph_type or next(self.graph_iter)
+        if graph_type:
+            while next(self.graph_iter) != graph_type:
+                pass
+            self.graph_type = graph_type
+        else:
+            self.graph_type = next(self.graph_iter)
         self.G = G_POLYHEDRA[self.graph_type]
         self.V, self.E, self.A = self.G['V'], self.G['E'], self.G['A']
         self.ORD = len(self.V)
@@ -86,21 +99,33 @@ class WalkTheLoop:
         """
         Initialize pygame, draw board.
         """
-        self.place_nodes_edges()
-        self.place_buttons()
-        self.draw_sprites()
         self.players.add_player()
+        self.add_nodes_edges()
+        self.add_buttons()
+        self.draw_sprites()
+        self.renew_sprites()
 
-    def place_nodes_edges(self):
+    def add_nodes_edges(self):
         """
         Add edges & nodes.
         """
         for e in self.E:
-            self.add_sprite_to_grps(Edge(group=self.edges_grp, data=e, pm=self.V[e[0]], pn=self.V[e[1]], screen_rect=self.screen_rect), edge=e)
+            self.add_sprite_to_grps(
+                Edge(
+                    scale=self.screen_scale,
+                    group=self.edges_grp,
+                    data=e,
+                    pm=self.V[e[0]],
+                    pn=self.V[e[1]],
+                    screen_rect=self.screen_rect
+                ),
+                edge=e
+            )
         for idx, vert in enumerate(self.V):
             self.add_sprite_to_grps(
                 Node(
                     A=self.A,
+                    scale=self.screen_scale,
                     center=vert,
                     group=self.nodes_grp,
                     data=idx,
@@ -112,18 +137,64 @@ class WalkTheLoop:
                 ), node=idx
             )
 
-    def place_buttons(self):
+    def add_buttons(self):
         """
-        Set buttons for other graph problems.
+        Add/Set buttons.
         """
-        self.buttons = {G_TYPES[i]: self.add_sprite_to_grps(GraphIcon(center=(250 + i * 100, 900), name=G_TYPES[i], group=self.buttons_grp), button_name=G_TYPES[i]) for i in range(6)}
-        self.buttons['s_icon'] = self.add_sprite_to_grps(Icon(name=self.graph_type, group=self.buttons_grp))
+        self.buttons = {
+            G_TYPES[i]:
+                self.add_sprite_to_grps(
+                    sprite=ActionIcon(
+                        scale=self.screen_scale,
+                        center=(250 + i * 100, 900),
+                        name=G_TYPES[i],
+                        current_graph_type=self.graph_type,
+                        group=self.buttons_grp
+                    ),
+                    button_name=G_TYPES[i])
+            for i in range(6)
+        }
+        self.buttons['drawn_icon'] = self.add_sprite_to_grps(
+            DrawnIcon(
+                name=self.graph_type,
+                group=self.buttons_grp,
+                center=[point * self.screen_scale for point in (900, 100)],
+                path_obj=self.path
+            )
+        )
+        self.buttons['play&pause'] = self.add_sprite_to_grps(
+            ToggleIcon(
+                center=(500, 750),
+                scale=self.screen_scale,
+                name='play&pause',
+                group=self.buttons_grp,
+                animate_state=self.animate
+            )
+        )
+        self.buttons['reset'] = self.add_sprite_to_grps(
+            ActionIcon(
+                screen_rect=(50, 50),
+                scale=self.screen_scale,
+                center=(400, 750),
+                name='reset',
+                group=self.buttons_grp
+            )
+        )
+        self.buttons['next'] = self.add_sprite_to_grps(
+            ActionIcon(
+                screen_rect=(50, 50),
+                scale=self.screen_scale,
+                center=(600, 750),
+                name='next',
+                group=self.buttons_grp
+            )
+        )
 
     def draw_sprites(self):
         """
         Draw sprites in all sprites.
         """
-        self.screen.fill(colors['BLACK'])
+        self.screen.fill(COLORS['BLACK'])
         for entity in self.all_sprites_grp:
             self.screen.blit(entity.surface, entity.rect)
         pygame.display.flip()
@@ -132,7 +203,7 @@ class WalkTheLoop:
         """
         Reset flags to default values.
         """
-        self.update, self.running = False, True
+        self.update, self.running, self.animate, self.winning = False, True, False, False
 
     def add_sprite_to_grps(self, sprite, node=None, edge=None, button_name=None):
         """
@@ -154,46 +225,99 @@ class WalkTheLoop:
         """
         Player play.
         """
-        new = False
+        self.update = True
+        self.animate, self.new = [False] * 2
         while self.running:
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONDOWN:
                     self.parse_click()
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
-                        self.running = False
+                        return
+                    elif event.key == K_RIGHT:
+                        self.animate = not self.animate
                     elif event.key == K_r:
                         self.reset_game(graph_type=self.graph_type)
+                    elif event.key == K_SPACE:
+                        self.animate = not self.animate
+                        self.buttons['play&pause'].switch()
                 elif event.type == QUIT:
                     self.running = False
-            if self.player.max_stepped:
-                if self.path.is_loop:
-                    self.running = False
-                    self.show_winning()
-                    new = True
-                else:
-                    self.show_losing()
-            if self.update:
-                if self.players.stepped:
-                    self.renew_sprites()
+
+            self.animate_path()
+            self.check_status()
+            self.renew_sprites()
             self.draw_sprites()
-        if new:
+            self.check_reset()
+
+        pygame.quit()
+
+    def animate_path(self):
+        """
+        Animate path
+        """
+        if self.animate:
+            try:
+                self.path.data[:] = next(self.walker)
+            except StopIteration:
+                self.animate = False
+                self.start_walker()
+            self.running = True
+        else:
+            self.start_walker()
+
+    def start_walker(self):
+        """
+        Start walker iterator according to current path.
+        """
+        data = self.path.data[:-1] if len(self.path.data) > 1 else [random.randint(0, self.ORD + 1)] if not self.path.data else self.path.data
+        self.walker = walker(self.A, s=data)
+
+    def check_status(self):
+        """
+        Check if a loop has been found.
+        """
+        if self.player.found_solution:
+            self.show_status('winning')
+            self.new = not self.animate
+        else:
+            self.update = True
+
+    def check_reset(self):
+        """
+        Check if game needs resetting.
+        """
+        if self.winning:
+            self.reset_game(self.graph_type)
+        if self.new:
             time.sleep(.5)
             self.reset_game()
             return self.play()
-        pygame.quit()
 
     def parse_click(self):
         """
         Process mouse click.
         """
         self.update = True
-        for g_type in self.buttons_grp:
-            if g_type.rect.collidepoint(pygame.mouse.get_pos()):
-                self.screen.fill(colors['BLACK'])
-                return self.reset_game(g_type.name)
+        for button in self.buttons_grp:
+            if button.rect.collidepoint(pygame.mouse.get_pos()):
+                if isinstance(button, ToggleIcon):
+                    self.animate = not self.animate
+                    return button.switch()
+                elif button.name == 'reset':
+                    self.screen.fill(COLORS['BLACK'])
+                    self.animate = False
+                    return self.reset_game(self.graph_type)
+                elif button.name == 'next':
+                    self.screen.fill(COLORS['BLACK'])
+                    return self.reset_game(next(self.graph_iter))
+                elif button.name in G_TYPES:
+                    self.screen.fill(COLORS['BLACK'])
+                    self.animate = False
+                    return self.reset_game(button.name)
         for n, node in self.nodes.items():
             if node.rect.collidepoint(pygame.mouse.get_pos()):
+                self.animate = False
                 if self.player.is_new:
                     return self.player.step(n)
                 elif n == self.player.butt and len(self.path) > 2:
@@ -210,33 +334,31 @@ class WalkTheLoop:
         Set edge style.
         """
         if node is not None:
-            (node_obj := self.nodes[node]).set_color(style)
+            (node_obj := self.nodes[node]).set_color(style=style)
             if style == 'active':
                 node_obj.player_id = self.player.id
         if edge:
-            (edge_obj := self.edges[frozenset(edge)]).set_color(style)
+            (edge_obj := self.edges[frozenset(edge)]).set_color(style=style)
             if style == 'active':
                 edge_obj.player_id = self.player.id
 
-    def show_winning(self):
+    def show_status(self, status='winning'):
         """
-        Set flags for winning, resulting in winning colors (GREEN).
+        Set flags for winning, resulting in winning COLORS (GREEN).
         """
+        self.screen.fill(COLORS['GREEN'])
         self.update = False
-        for n in self.path:
-            self.set_node_edge(node=n, style='winning')
-        for e in self.path.edges:
-            self.set_node_edge(edge=e, style='winning')
-
-    def show_losing(self):
-        """
-        Set flags for winning, resulting in losing colors (RED)
-        """
-        self.update = False
-        for n in self.path:
-            self.set_node_edge(node=n, style='losing')
-        for e in self.path.edges:
-            self.set_node_edge(edge=e, style='losing')
+        frozen_edges = {frozenset(edge) for edge in self.path.edges}
+        for n in range(self.ORD):
+            if n in self.path:
+                self.set_node_edge(node=n, style=status)
+            else:
+                self.set_node_edge(node=n, style='inactive')
+        for edge in self.edges.keys():
+            if edge in frozen_edges:
+                self.set_node_edge(edge=edge, style=status)
+            else:
+                self.set_node_edge(edge=edge, style='inactive')
 
     def run(self, n):
         """
@@ -251,8 +373,10 @@ class WalkTheLoop:
         """
         Renew (deactivate and color) edges and nodes.
         """
-        self.renew_nodes()
-        self.renew_edges()
+        if self.update:
+            if self.players.stepped:
+                self.renew_nodes()
+                self.renew_edges()
 
     def renew_nodes(self):
         """
@@ -284,4 +408,4 @@ class WalkTheLoop:
         Refresh head or origin.
         """
         for idx, style in enumerate(('head', 'origin')):
-            self.set_node_edge(node=player.ends[0], style=style)
+            self.set_node_edge(node=player.ends[idx], style=style)

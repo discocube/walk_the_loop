@@ -209,12 +209,16 @@ def walk(A, start=0, walked=None, goal=None, shuffle=True, prune=False) -> list[
         if nxt := set(A[path[-1]].difference(walked)):
             step = nxt.pop()
             path.append(step)
+            # HERE GIVE OUT PATH
             walked.add(step)
             if nxt:
                 uu += [(len(path) - 1, n) for n in nxt]
         else:
+            # HERE RED TO SHOW LACK OF SUCCESS
             if uu:
+
                 path[u[0]:] = [(u := uu.pop())[1]]
+                # back tracking finished: SEND THIS TO GAME
             else:
                 break
         if path[-1] == goal:
@@ -259,3 +263,42 @@ def scale_vertices(vertices, scale=10):
     Scale vertices according to factor
     """
     return [(a * scale, b * scale) for a, b in vertices]
+
+
+def walker(A, s: tuple[int] = (0,)):
+    """
+    General brute-force walk algorithm.
+    """
+    longest_move = []
+    ORD = len(A)
+    uu: list = []
+    loops: set = set()
+    w: list = [*s]
+    while True:
+        time.sleep(0.1)
+        yield w
+        if nxt := A[w[-1]].difference(w):
+            w.append(nxt.pop())
+            if len(w) > len(longest_move):
+                longest_move = w.copy()
+            if nxt:
+                uu += [(len(w) - 1, n) for n in nxt]
+        else:
+            if uu:
+                w[u[0]:] = [(u := uu.pop())[1]]
+            else:
+                yield longest_move
+                return
+        if len(w) == ORD:
+            if w[0] in A[w[-1]]:
+                loops.add(tuple(w))
+                print(cp() - 1, tuple(w))
+                yield w
+
+
+def scale_point(point, scale, intd=True):
+    """
+    Scale point according to scale
+    """
+
+    return [(int(p * scale) if intd else p * scale) for p in point]

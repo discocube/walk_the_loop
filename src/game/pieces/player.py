@@ -1,6 +1,8 @@
 """
 Player class.
 """
+import random
+
 from src.game.pieces.path import Path
 
 
@@ -12,8 +14,7 @@ class Player:
         self.A = A
         self.ORD = len(self.A.keys())
         self.id = player_id
-        self.path = Path(A=A, data=data or [], player_id=self.id)
-
+        self.path = Path(A=A, data=data or random.sample(range(self.ORD), 1), player_id=self.id)
         self.players = players
         self.debug = debug
 
@@ -23,6 +24,13 @@ class Player:
         Max number steps taken
         """
         return len(self.players.stepped) == self.ORD
+
+    @property
+    def found_solution(self):
+        """
+        If hamiltonian path found.
+        """
+        return self.max_stepped and self.path.is_loop
 
     @property
     def head(self):
