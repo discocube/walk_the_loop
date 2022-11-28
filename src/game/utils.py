@@ -209,16 +209,12 @@ def walk(A, start=0, walked=None, goal=None, shuffle=True, prune=False) -> list[
         if nxt := set(A[path[-1]].difference(walked)):
             step = nxt.pop()
             path.append(step)
-            # HERE GIVE OUT PATH
             walked.add(step)
             if nxt:
                 uu += [(len(path) - 1, n) for n in nxt]
         else:
-            # HERE RED TO SHOW LACK OF SUCCESS
             if uu:
-
                 path[u[0]:] = [(u := uu.pop())[1]]
-                # back tracking finished: SEND THIS TO GAME
             else:
                 break
         if path[-1] == goal:
@@ -292,7 +288,6 @@ def walker(A, s: tuple[int] = (0,)):
         if len(w) == ORD:
             if w[0] in A[w[-1]]:
                 loops.add(tuple(w))
-                print(cp() - 1, tuple(w))
                 yield w
 
 
