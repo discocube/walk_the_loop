@@ -10,7 +10,7 @@ from src.game.pieces.edge import Edge
 from src.game.pieces.icons import ActionIcon, DrawnIcon, ToggleIcon
 from src.game.pieces.node import Node
 from src.game.pieces.players import Players
-from src.game.settings import COLORS, G_TYPES, G_POLYHEDRA
+from src.game.definitions import COLORS, G_TYPES, G_POLYHEDRA
 from src.game.utils import time, walk, walker
 
 

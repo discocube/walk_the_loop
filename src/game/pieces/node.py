@@ -6,8 +6,7 @@ import pygame.sprite
 from pygame import gfxdraw
 from random import randint
 
-from src.game.settings import COLORS
-from src.game.definitions import ICONS_DIR
+from src.game.definitions import ICONS_DIR, COLORS
 from src.game.utils import scale_point
 
 

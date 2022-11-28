@@ -4,9 +4,8 @@ Icons for game. Not game pieces.
 import os
 import pygame
 
-from src.game.definitions import ICONS_DIR
+from src.game.definitions import ICONS_DIR, COLORS, G_POLYHEDRA
 from src.game.pieces.edge import Edge
-from src.game.settings import COLORS, G_POLYHEDRA
 from src.game.utils import scale_point
 
 

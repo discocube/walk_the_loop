@@ -2,7 +2,7 @@
 Main for playing platonic ham.
 """
 
-from walk_the_loop import WalkTheLoop
+from src.game.walk_the_loop import WalkTheLoop
 
 
 def main(screen_size=(1000, 1000), numbered=True):

@@ -4,7 +4,7 @@ Edge class
 from math import sqrt
 import pygame
 
-from src.game.settings import COLORS
+from src.game.definitions import COLORS
 from src.game.utils import scale_point
 
 
