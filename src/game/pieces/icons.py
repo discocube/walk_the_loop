@@ -4,7 +4,7 @@ Icons for game. Not game pieces.
 import os
 import pygame
 
-from src.game.definitions import ICONS_DIR, COLORS, G_POLYHEDRA
+from src.game.defs import ICONS_DIR, COLORS, G_POLYHEDRA
 from src.game.pieces.edge import Edge
 from src.game.utils import scale_point
 
@@ -56,9 +56,9 @@ class DrawnIcon(pygame.sprite.Sprite):
             active_edges = {frozenset(e) for e in self.path_obj.edges}
             for edge in self.E:
                 if edge in active_edges:
-                    self.edges[edge].set_color(style='active', thickness=4)
+                    self.edges[edge].set_color(style='active')
                 else:
-                    self.edges[edge].set_color(thickness=4)
+                    self.edges[edge].set_color()
         return self._surface
 
 

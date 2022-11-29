@@ -6,7 +6,7 @@ import pygame.sprite
 from pygame import gfxdraw
 from random import randint
 
-from src.game.definitions import ICONS_DIR, COLORS
+from src.game.defs import ICONS_DIR, COLORS
 from src.game.utils import scale_point
 
 
@@ -14,7 +14,7 @@ class NodeSprite(pygame.sprite.Sprite):
     """
     Node class sprite.
     """
-    def __init__(self, scale=1, center=None, group=None, data=None, player_id=0, radius=1, numbered=True, screen=None, screen_rect=None):
+    def __init__(self, scale=1, center=None, group=None, data=None, player_id=0, radius=10, numbered=True, screen=None, screen_rect=None):
         super().__init__(group)
         self._surface = None
         self.scale = scale
@@ -28,7 +28,7 @@ class NodeSprite(pygame.sprite.Sprite):
         self.group = group
         self.data = data
         self.player_id = player_id
-        self.radius = int(radius * self.scale)
+        self.radius = int(radius or 10 * self.scale)
         self.numbered = numbered
         self.screen = screen
         self.style = 'inactive'
@@ -87,8 +87,8 @@ class Node(NodeSprite):
     """
     Node class.
     """
-    def __init__(self, A=None, scale=1, center=None, group=None, data=None, player_id=0, players=None, paths=None, radius=10, numbered=True, screen=None, screen_rect=None): # noqa
-        super().__init__(scale=scale, center=center, group=group, data=data, player_id=player_id, radius=radius, numbered=numbered, screen=screen, screen_rect=screen_rect)  # noqa
+    def __init__(self, A=None, players=None, paths=None, **kwargs):
+        super().__init__(**kwargs)
         self.A = A
         self.players = players
         self.paths = paths

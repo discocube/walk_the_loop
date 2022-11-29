@@ -6,8 +6,7 @@ import os
 from random import randint
 
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-print(ROOT_DIR)
+# ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = '/home/rommelo/Repos/walk_the_loop/src/game'
 ICONS_DIR = os.path.join(ROOT_DIR, 'static/icons')
 

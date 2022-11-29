@@ -271,7 +271,7 @@ def walker(A, s: tuple[int] = (0,)):
     loops: set = set()
     w: list = [*s]
     while True:
-        time.sleep(0.1)
+        # time.sleep(0.1)
         yield w
         if nxt := A[w[-1]].difference(w):
             w.append(nxt.pop())

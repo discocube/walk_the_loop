@@ -4,7 +4,7 @@ Edge class
 from math import sqrt
 import pygame
 
-from src.game.definitions import COLORS
+from src.game.defs import COLORS
 from src.game.utils import scale_point
 
 
@@ -57,20 +57,32 @@ class Edge(pygame.sprite.Sprite):
         self.data = data
         self.surface = surface or pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         self.rect = self.surface.get_rect()
-        pygame.draw.aaline(self.surface, COLORS[self.style], self.pm, self.pn, blend=self.thickness)
+        pygame.draw.aaline(self.surface, COLORS[self.style], self.pm, self.pn)
 
-    def set_color(self, style='inactive', thickness=None):
+    def set_color(self, style='inactive'):
         """
         Change color based on style.
         """
         self.style = style
-        self.thickness = thickness or self.thickness
+        self.thickness = self.thickness
+        self.draw_black_line()
         pygame.draw.aaline(
             surface=self.surface,
             color=COLORS[f'active_{self.player_id}' if self.style == 'active' else self.style],
             start_pos=self.pm,
             end_pos=self.pn,
-            blend=self.thickness + 4 if style == 'inactive' else self.thickness
+        )
+
+    def draw_black_line(self, thickness=3):
+        """
+        Change color based on style.
+        """
+        pygame.draw.line(
+            surface=self.surface,
+            color=COLORS['BLACK'],
+            start_pos=self.pm,
+            end_pos=self.pn,
+            width=thickness
         )
 
     def draw_lines(self, points, style='inactive', closed=False):
@@ -83,21 +95,40 @@ class Edge(pygame.sprite.Sprite):
             color=COLORS[f'active_{self.player_id}' if self.style == 'active' else self.style],
             closed=closed,
             points=points,
-            blend=self.thickness
         )
 
-    def draw_dashed(self, style='active', dash_length=10):
+    def draw_dashed_gen(self, style='active', dash_length=5, origin_node=None):
         """
         Draw dashed edge.
         """
-        origin, target = Point(self.pm), Point(self.pn)
+        origin = Point(self.pm) if origin_node == self.data[0] else Point(self.pn)
+        target = Point(self.pn) if origin_node == self.data[0] else Point(self.pm)
+        slope = (displacement := target - origin) / (length := len(displacement))
+        dash_length = int(length / 100) or 1
+
+        for index in range(0, length // dash_length):
+            start = origin + (slope * index * dash_length)
+            end = origin + (slope * (index + 1) * dash_length)
+            yield pygame.draw.aaline(
+                    surface=self.surface,
+                    color=COLORS[f'active_{self.player_id}' if style == 'active' else style],
+                    start_pos=start.vectors,
+                    end_pos=end.vectors,
+                )
+
+    def draw_dashed(self, style='active', dash_length=8, origin_node=None):
+        """
+        Draw dashed edge.
+        """
+        origin = Point(self.pm) if origin_node == self.data[0] else Point(self.pn)
+        target = Point(self.pn) if origin_node == self.data[0] else Point(self.pm)
         slope = (displacement := target - origin) / (length := len(displacement))
         for index in range(0, length // dash_length, 2):
             start = origin + (slope * index * dash_length)
             end = origin + (slope * (index + 1) * dash_length)
-            pygame.draw.line(
-                surface=self.surface,
-                color=COLORS[f'active_{self.player_id}' if style == 'active' else style],
-                start_pos=start.vectors,
-                end_pos=end.vectors,
-                width=self.thickness - 4)
+            pygame.draw.aaline(
+                    surface=self.surface,
+                    color=COLORS[f'active_{self.player_id}' if style == 'active' else style],
+                    start_pos=start.vectors,
+                    end_pos=end.vectors,
+                )

@@ -10,7 +10,7 @@ from src.game.pieces.edge import Edge
 from src.game.pieces.icons import ActionIcon, DrawnIcon, ToggleIcon
 from src.game.pieces.node import Node
 from src.game.pieces.players import Players
-from src.game.definitions import COLORS, G_TYPES, G_POLYHEDRA
+from src.game.defs import COLORS, G_TYPES, G_POLYHEDRA
 from src.game.utils import time, walk, walker
 
 
@@ -18,23 +18,26 @@ class WalkTheLoop:
     """
     Icosian Game
     """
-    screen, buttons = None, {}
+    original_size = 1000
+    new, winning, losing = [False] * 3
+    blinking = True
+    screen = None
+    dashed_edges, buttons, animations = None, {}, {}
     edges, nodes, players, clock = [None] * 4
     update, running = [None] * 2
     G, V, E, A, ORD = [None] * 5
     walker = None
+    all_sprites_grp, edges_grp, nodes_grp, buttons_grp = (pygame.sprite.Group() for _ in range(4))
+    graph_iter = cycle(G_TYPES)
 
-    def __init__(self, screen_size=(800, 800), numbered=True, graph_type=None, animate=False):
-        self.new = False
-        self.winning, self.losing = False, False
-        self.animate = animate
+    def __init__(self, screen_size=(1000, 1000), numbered=True, graph_type=None, animate=False):
+
+        self.blinking_nodes = []
         self.screen_rect = screen_size
-        self.screen_scale = self.screen_rect[0] / 1000
+        self.screen_scale = self.screen_rect[0] / self.original_size
         self.numbered = numbered
         self.graph_type = graph_type
-
-        self.all_sprites_grp, self.edges_grp, self.nodes_grp, self.buttons_grp = (pygame.sprite.Group() for _ in range(4))
-        self.graph_iter = cycle(G_TYPES)
+        self.animate = animate
 
         self.init_screen_clock()
         self.reset_game(graph_type=self.graph_type)
@@ -69,11 +72,21 @@ class WalkTheLoop:
         self.set_graph(graph_type=graph_type)
         self.walker = walker(self.A)
         self.edges = {frozenset(edge): None for edge in self.E}
+        self.dashed_edges = {frozenset(edge): None for edge in self.E}
         self.nodes = {node: None for node in self.A.keys()}
+        self.blinking = True
         self.players = Players(self.G, nodes=self.nodes)
+        self.add_animations()
         self.make_sprite_grps()
         self.reset_board()
         self.reset_flags()
+
+    def add_animations(self):
+        """
+        Add animation event: blinking first.
+        """
+        self.animations['blinking'] = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.animations['blinking'], 20)
 
     def set_graph(self, graph_type=None):
         """
@@ -100,6 +113,7 @@ class WalkTheLoop:
         Initialize pygame, draw board.
         """
         self.players.add_player()
+        self.blinking_nodes.extend(list(self.A[self.path.data[-1]]))
         self.add_nodes_edges()
         self.add_buttons()
         self.draw_sprites()
@@ -230,8 +244,10 @@ class WalkTheLoop:
         while self.running:
             for event in pygame.event.get():
                 if event.type == MOUSEBUTTONDOWN:
+                    self.reset_blinking()
                     self.parse_click()
                 elif event.type == KEYDOWN:
+                    self.reset_blinking()
                     if event.key == K_ESCAPE:
                         return
                     elif event.key == K_RIGHT:
@@ -241,22 +257,50 @@ class WalkTheLoop:
                     elif event.key == K_SPACE:
                         self.animate = not self.animate
                         self.buttons['play&pause'].switch()
-                elif event.type == QUIT:
-                    self.running = False
+                    elif event.type == QUIT:
+                        self.running = False
 
+                elif self.blinking and self.path.data:
+                    self.set_blinking(event)
             self.animate_path()
             self.check_status()
             self.renew_sprites()
             self.draw_sprites()
             self.check_reset()
-
         pygame.quit()
+
+    def set_blinking(self, event):
+        """
+        Process blinking
+        """
+        self.update = False
+        if event.type == self.animations['blinking']:
+            left_node = self.player.head
+            for node in self.A[self.path.data[-1]]:
+                edge = frozenset((left_node, node))
+                if not self.dashed_edges[edge]:
+                    self.nodes[node].set_color('inactive')
+                    self.nodes[node].set_color('inactive')
+                    self.dashed_edges[edge] = self.edges[edge].draw_dashed_gen(origin_node=left_node)
+                    next(self.dashed_edges[edge])
+                else:
+                    try:
+                        next(self.dashed_edges[edge])
+                        self.nodes[node].set_color('blink')
+                    except StopIteration:
+                        self.edges[edge].draw_black_line(thickness=3)
+                        self.set_node_edge(edge=edge, style='inactive')
+                        # self.dashed_edges[edge] = self.edges[edge].draw_dashed_gen(origin_node=left_node)
+                        self.dashed_edges[edge] = None
+                        self.nodes[node].set_color('inactive')
 
     def animate_path(self):
         """
         Animate path
         """
+
         if self.animate:
+            self.reset_blinking()
             try:
                 self.path.data[:] = next(self.walker)
             except StopIteration:
@@ -320,14 +364,24 @@ class WalkTheLoop:
                 self.animate = False
                 if self.player.is_new:
                     return self.player.step(n)
-                elif n == self.player.butt and len(self.path) > 2:
+                if n == self.player.butt and len(self.path) > 2:
                     return self.player.switch_head()
                 elif n in self.player.path:
                     return self.path.rewind(n)
                 elif n not in self.player.path:
                     if node.is_adjacent(self.player.head):
+                        self.reset_blinking()
                         return self.player.step(n)
                     return self.run(n)
+
+    def reset_blinking(self, style='inactive'):
+        """
+        Set color of blink nodes to inactive.
+        """
+        for n in self.A[self.path.data[-1]]:
+            self.nodes[n].set_color(style)
+        self.dashed_edges = {frozenset(edge): None for edge in self.E}
+        self.blinking = not style == 'inactive'
 
     def set_node_edge(self, node=None, edge=None, style='active'):
         """
@@ -383,7 +437,8 @@ class WalkTheLoop:
         Gray out nodes then recolor.
         """
         for node in self.nodes.values():
-            node.set_color('inactive')
+            if not node.style == 'blink':
+                node.set_color('inactive')
         for player in self.players.data.values():
             for n in player.path:
                 self.set_node_edge(node=n, style='active')
@@ -395,8 +450,9 @@ class WalkTheLoop:
         Gray out nodes then recolor.
         Assign player_id to each node.
         """
-        for edge in self.E:
-            self.set_node_edge(edge=edge, style='inactive')
+        if not self.blinking:
+            for edge in self.E:
+                self.set_node_edge(edge=edge, style='inactive')
         for player in self.players.data.values():
             path = player.path
             if path.has_edge:
